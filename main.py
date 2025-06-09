@@ -488,14 +488,14 @@ if __name__ == "__main__":
 
 
         # Create and save vector db
-        # vector_store = create_db_from_pdf("data/Data_wiki_Elon_Musk.pdf")
+        # vector_store = create_db_from_pdf("./data/Vietnam_war.pdf")
         # vector_store.save_local("./db/vector_store_faiss")
 
         # Load vector db from save
-        # rag_system.load_vector_store_from_saved("./db/vector_store_faiss")
+        rag_system.load_vector_store_from_saved("./db/vector_store_faiss")
 
         # Load from pdf file
-        rag_system.load_vector_store_from_pdf("./data/Vietnam_war.pdf")
+        # rag_system.load_vector_store_from_pdf("./data/Vietnam_war.pdf")
 
         # Start chat loop
         asyncio.run(rag_system.chat_loop())
