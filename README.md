@@ -35,7 +35,7 @@ The workflow of the RAG system is described as follows:
 Workflow answers user questions like this:
 
 <div align="center">
-  <img src="./rag_system_graph.png" alt="RAG System Workflow" width="80%" />
+  <img src="./rag_system_graph.png" alt="RAG System Workflow" />
   <br>
   <strong><em>Figure 1: RAG System Processing Workflow</em></strong>
 </div>
