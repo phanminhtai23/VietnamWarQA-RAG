@@ -120,5 +120,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 For any questions or suggestions, please feel free to reach out:
 
--   **GitHub**: phanminhtai23
+-   **GitHub**: https://github.com/phanminhtai23
 -   **Email**: phanminhtai23@gmail.com
