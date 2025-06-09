@@ -98,21 +98,27 @@ class PDFVectorStore:
     
     def _add_section_metadata(self, documents: List[Document]):
         """
-        Add section metadata (beginning, middle, end) to documents
+        Add section metadata to documents based on page numbers
+        
+        This function categorizes document pages into different periods:
+        - Pages 1-8: "diem_era_and_coup" (Diem era and coup period)
+        - Pages 9-17: "us_escalation_and_withdrawal" (US escalation and withdrawal period)
+        - Pages 18+: "war_end_and_aftermath" (War end and aftermath period)
         
         Args:
             documents (List[Document]): List of documents to add metadata to
         """
-        total_documents = len(documents)
-        third = total_documents // 3
-        
-        for i, document in enumerate(documents):
-            if i < third:
-                document.metadata["section"] = "beginning"
-            elif i < 2 * third:
-                document.metadata["section"] = "middle"
+        for doc in documents:
+            # PyPDFLoader automatically adds 'page' to metadata, starting from 0
+            page_number = doc.metadata.get("page", 0) + 1  # Convert to page number starting from 1
+
+            if page_number <= 8:
+                doc.metadata["section"] = "diem_era_and_coup"
+            elif 9 <= page_number <= 17:
+                doc.metadata["section"] = "us_escalation_and_withdrawal"
             else:
-                document.metadata["section"] = "end"
+                # Remaining pages from 18 -> 28
+                doc.metadata["section"] = "war_end_and_aftermath"
     
     def create_vector_store(self, documents: List[Document]) -> FAISS:
         """
@@ -269,12 +275,11 @@ def get_db_from_saved(
 # === DEMO ===
 if __name__ == "__main__":
     pdf_vs1 = PDFVectorStore()
-    doc = pdf_vs1.load_pdf("data/Data_wiki_Elon_Musk.pdf")
-    doc_splits = pdf_vs1.split_documents(doc)
+    doc = pdf_vs1.load_pdf("data/Vietnam_war.pdf")
+    doc_splits = pdf_vs1.split_documents(doc, chunk_size=1000, chunk_overlap=150)
 
-    print(doc_splits[0].metadata)
-    # vector_store = pdf_vs1.create_vector_store(doc_splits)
-    # vector_store.save_local("vector_store_faiss")
+    vector_store = pdf_vs1.create_vector_store(doc_splits)
+    vector_store.save_local("./db/vector_store_faiss")
 
 
     # vector_store = pdf_vs1.create_db_from_pdf("data/Data_wiki_Elon_Musk.pdf", add_section_metadata=False)

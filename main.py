@@ -135,9 +135,9 @@ class RAGSystem:
         """Search query schema."""
         query: Annotated[str, ..., "Search query to run."]
         section: Annotated[
-            Literal["beginning", "middle", "end", "all"],
+            Literal["diem_era_and_coup", "us_escalation_and_withdrawal", "war_end_and_aftermath", "all"],
             ...,
-            "Section to query. Can be 'beginning', 'middle', 'end', or 'all'.",
+            "Section to query.",
         ]
     
     # --- State for LangGraph ---
@@ -165,10 +165,28 @@ class RAGSystem:
         
         try:
             structured_llm = self.llm.with_structured_output(self.Search)
-            query = structured_llm.invoke(
-                f"Extract the search query and relevant section ('beginning', 'middle', 'end', or 'all') "
-                f"from this question: {state['question']}"
-            )
+            # Create a detailed prompt template
+            prompt_template = f"""
+            You are an expert query analyzer for a Retrieval-Augmented Generation (RAG) system.
+            Your task is to analyze the user's question and determine the most relevant section of the document to search in.
+
+            Here is the document's structure:
+            - **diem_era_and_coup**: Focuses on the failure of Ngo Dinh Diem's regime, the Strategic Hamlet Program, the Buddhist crisis, and the 1963 coup. Covers the early 1960s.
+            - **us_escalation_and_withdrawal**: Covers the main period of American military involvement, including the Gulf of Tonkin incident, the Tet Offensive, the 'Vietnamization' policy under Nixon, and the Paris Peace Accords. Covers roughly 1964-1973.
+            - **war_end_and_aftermath**: Describes the final offensive in 1975, the Fall of Saigon, and the long-term consequences of the war, such as the refugee crisis, the effects of Agent Orange, and the financial cost. Covers 1975 and post-war topics.
+            - **all**: Use this if the question is very general or spans multiple sections.
+
+            Based on the user's question, extract a concise search query and choose the most appropriate section from the list: ["diem_era_and_coup", "us_escalation_and_withdrawal", "war_end_and_aftermath", "all"].
+
+            ---
+            User Question: "{state['question']}"
+            ---
+
+            Respond with only the structured output.
+            """
+
+            # Invoke the LLM with the new, detailed prompt
+            query = structured_llm.invoke(prompt_template)
             if self.debug_mode:
                 print(f"📝 Analyzed query: Query='{query['query']}', Section='{query['section']}'")
             return {"query": query}
@@ -205,7 +223,7 @@ class RAGSystem:
                     print(f"🎯 Retrieving with section filter: '{search_section}'")
                 retrieved_docs = self.vector_store.similarity_search(
                     search_query,
-                    filter=lambda doc: doc.metadata.get("section") == search_section,
+                    filter={"section": search_section},
                     k=5
                 )
             else:
@@ -411,7 +429,7 @@ class RAGSystem:
         """Display usage instructions"""
         help_text = """
 📖 --- USAGE INSTRUCTIONS ---
-• Enter questions in Vietnamese or English
+• Enter questions in English
 • The system will search for relevant information and answer
 • Type 'exit' to quit
 • Type 'help' to see these instructions
@@ -419,7 +437,7 @@ class RAGSystem:
 💡 --- TIPS ---
 • More specific questions get more accurate answers
 • You can ask about different parts of the document
-• Example: "When was Elon Musk born?", "When was Tesla founded?"
+• Example: "What year did the war start?", "How many years did the war last?"
         """
         print(help_text)
 
