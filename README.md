@@ -85,7 +85,14 @@ Run the `main.py` script to start the chatbot. The first time you run it, the sy
 ```bash
 python main.py
 ```
-After initialization, you can start asking questions directly in your terminal.
+After initialization, you can start asking questions directly in your terminal like this:
+
+<div align="center">
+  <img src="./chat_example.png" alt="chat example" width="100%"/>
+  <br>
+  <strong><em>Figure 2: Chat example</em></strong>
+</div>
+
 
 ## 6. Dataset
 
