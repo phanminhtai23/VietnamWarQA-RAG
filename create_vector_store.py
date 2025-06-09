@@ -8,50 +8,50 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-# Load biến môi trường
+# Load environment variables
 load_dotenv("./.env")
 
 class PDFVectorStore:
     """
-    Class để tạo và quản lý vector store từ file PDF
+    Class for creating and managing vector store from PDF files
     """
     
     def __init__(self, embedding_model: str = "models/embedding-001"):
         """
-        Khởi tạo PDFVectorStore
+        Initialize PDFVectorStore
         
         Args:
-            embedding_model (str): Tên model embedding của Gemini
+            embedding_model (str): Gemini embedding model name
         """
         try:
             self.embeddings = GoogleGenerativeAIEmbeddings(model=embedding_model)
-            # print(f"✅ Embedding model ({embedding_model}) đã được khởi tạo thành công!")
+            # print(f"✅ Embedding model ({embedding_model}) initialized successfully!")
         except Exception as e:
-            print(f"❌ Lỗi khi khởi tạo Embedding model: {e}")
-            print("💡 Vui lòng đảm bảo bạn đã đặt biến môi trường 'GOOGLE_API_KEY' và nó hợp lệ.")
+            print(f"❌ Error initializing Embedding model: {e}")
+            print("💡 Please ensure you have set the 'GOOGLE_API_KEY' environment variable and it's valid.")
             raise e
     
     def load_pdf(self, pdf_path: str) -> List[Document]:
         """
-        Load tài liệu từ file PDF
+        Load documents from PDF file
         
         Args:
-            pdf_path (str): Đường dẫn đến file PDF
+            pdf_path (str): Path to PDF file
             
         Returns:
-            List[Document]: Danh sách các document đã load
+            List[Document]: List of loaded documents
         """
         if not os.path.exists(pdf_path):
-            raise FileNotFoundError(f"❌ Không tìm thấy file PDF: {pdf_path}")
+            raise FileNotFoundError(f"❌ PDF file not found: {pdf_path}")
         
         try:
-            print(f"📄 Đang tải tài liệu từ PDF: {pdf_path}")
+            print(f"📄 Loading document from PDF: {pdf_path}")
             loader = PyPDFLoader(pdf_path)
             docs = loader.load()
-            print(f"✅ Đã tải {len(docs)} trang từ PDF.")
+            print(f"✅ Loaded {len(docs)} pages from PDF.")
             return docs
         except Exception as e:
-            print(f"❌ Lỗi khi tải PDF: {e}")
+            print(f"❌ Error loading PDF: {e}")
             raise e
     
     def split_documents(
@@ -62,19 +62,19 @@ class PDFVectorStore:
         add_section_metadata: bool = True
     ) -> List[Document]:
         """
-        Chia tài liệu thành các chunks nhỏ hơn
+        Split documents into smaller chunks
         
         Args:
-            docs (List[Document]): Danh sách documents cần chia
-            chunk_size (int): Kích thước mỗi chunk
-            chunk_overlap (int): Số ký tự overlap giữa các chunks
-            add_section_metadata (bool): Có thêm metadata section không
+            docs (List[Document]): List of documents to split
+            chunk_size (int): Size of each chunk
+            chunk_overlap (int): Number of characters overlap between chunks
+            add_section_metadata (bool): Whether to add section metadata
             
         Returns:
-            List[Document]: Danh sách các chunks
+            List[Document]: List of chunks
         """
         try:
-            print(f"✂️ Đang chia tài liệu thành chunks (size={chunk_size}, overlap={chunk_overlap})...")
+            print(f"✂️ Splitting documents into chunks (size={chunk_size}, overlap={chunk_overlap})...")
             
             text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=chunk_size,
@@ -84,24 +84,24 @@ class PDFVectorStore:
             )
             
             all_splits = text_splitter.split_documents(docs)
-            print(f"✅ Đã chia thành {len(all_splits)} chunks.")
+            print(f"✅ Split into {len(all_splits)} chunks.")
             
-            # Thêm metadata section nếu được yêu cầu
+            # Add section metadata if requested
             if add_section_metadata:
                 self._add_section_metadata(all_splits)
-                print("✅ Đã thêm metadata 'section' cho các chunks.")
+                print("✅ Added 'section' metadata to chunks.")
             
             return all_splits
         except Exception as e:
-            print(f"❌ Lỗi khi chia documents: {e}")
+            print(f"❌ Error splitting documents: {e}")
             raise e
     
     def _add_section_metadata(self, documents: List[Document]):
         """
-        Thêm metadata section (beginning, middle, end) cho documents
+        Add section metadata (beginning, middle, end) to documents
         
         Args:
-            documents (List[Document]): Danh sách documents cần thêm metadata
+            documents (List[Document]): List of documents to add metadata to
         """
         total_documents = len(documents)
         third = total_documents // 3
@@ -116,24 +116,24 @@ class PDFVectorStore:
     
     def create_vector_store(self, documents: List[Document]) -> FAISS:
         """
-        Tạo vector store từ danh sách documents
+        Create vector store from list of documents
         
         Args:
-            documents (List[Document]): Danh sách documents cần index
+            documents (List[Document]): List of documents to index
             
         Returns:
-            FAISS: Vector store đã được tạo
+            FAISS: Created vector store
         """
         try:
-            print(f"🔍 Đang tạo vector store và index {len(documents)} chunks...")
+            print(f"🔍 Creating vector store and indexing {len(documents)} chunks...")
             
-            # Tạo vector store từ documents
+            # Create vector store from documents
             vector_store = FAISS.from_documents(documents, self.embeddings)
             
-            print(f"✅ Đã tạo vector store và index {len(documents)} chunks thành công!")
+            print(f"✅ Successfully created vector store and indexed {len(documents)} chunks!")
             return vector_store
         except Exception as e:
-            print(f"❌ Lỗi khi tạo vector store: {e}")
+            print(f"❌ Error creating vector store: {e}")
             raise e
     
     def create_vector_store_from_pdf(
@@ -144,16 +144,16 @@ class PDFVectorStore:
         add_section_metadata: bool = True
     ) -> FAISS:
         """
-        Tạo vector store trực tiếp từ file PDF (hàm all-in-one)
+        Create vector store directly from PDF file (all-in-one function)
         
         Args:
-            pdf_path (str): Đường dẫn đến file PDF
-            chunk_size (int): Kích thước mỗi chunk
-            chunk_overlap (int): Số ký tự overlap giữa các chunks
-            add_section_metadata (bool): Có thêm metadata section không
+            pdf_path (str): Path to PDF file
+            chunk_size (int): Size of each chunk
+            chunk_overlap (int): Number of characters overlap between chunks
+            add_section_metadata (bool): Whether to add section metadata
             
         Returns:
-            FAISS: Vector store đã được tạo và index
+            FAISS: Created and indexed vector store
         """
         try:
             # 1. Load PDF
@@ -170,54 +170,54 @@ class PDFVectorStore:
             # 3. Create vector store
             vector_store = self.create_vector_store(chunks)
             
-            print(f"🎉 Hoàn thành! Vector store đã sẵn sàng với {len(chunks)} chunks.")
+            print(f"🎉 Complete! Vector store is ready with {len(chunks)} chunks.")
             return vector_store
             
         except Exception as e:
-            print(f"❌ Lỗi trong quá trình tạo vector store từ PDF: {e}")
+            print(f"❌ Error during vector store creation from PDF: {e}")
             raise e
     
     def save_vector_store(self, vector_store: FAISS, save_path: str):
         """
-        Lưu vector store vào local
+        Save vector store to local storage
         
         Args:
-            vector_store (FAISS): Vector store cần lưu
-            save_path (str): Đường dẫn thư mục để lưu
+            vector_store (FAISS): Vector store to save
+            save_path (str): Directory path to save to
         """
         try:
-            print(f"💾 Đang lưu vector store vào: {save_path}")
+            print(f"💾 Saving vector store to: {save_path}")
             vector_store.save_local(save_path)
-            print(f"✅ Đã lưu vector store thành công!")
+            print(f"✅ Vector store saved successfully!")
         except Exception as e:
-            print(f"❌ Lỗi khi lưu vector store: {e}")
+            print(f"❌ Error saving vector store: {e}")
             raise e
     
     def load_vector_store(self, load_path: str) -> FAISS:
         """
-        Load vector store từ local
+        Load vector store from local storage
         
         Args:
-            load_path (str): Đường dẫn thư mục chứa vector store
+            load_path (str): Directory path containing vector store
             
         Returns:
-            FAISS: Vector store đã được load
+            FAISS: Loaded vector store
         """
         try:
-            # print(f"📂 Đang load vector store từ: {load_path}")
+            # print(f"📂 Loading vector store from: {load_path}")
             vector_store = FAISS.load_local(
                 load_path, 
                 self.embeddings,
-                allow_dangerous_deserialization=True  # Cần thiết cho FAISS
+                allow_dangerous_deserialization=True  # Required for FAISS
             )
-            # print(f"✅ Đã load vector store thành công!")
+            # print(f"✅ Vector store loaded successfully!")
             return vector_store
         except Exception as e:
-            print(f"❌ Lỗi khi load vector store: {e}")
+            print(f"❌ Error loading vector store: {e}")
             raise e
 
 
-# === HÀM TIỆN ÍCH (Utility Functions) ===
+# === UTILITY FUNCTIONS ===
 
 def create_db_from_pdf(
     pdf_path: str,
@@ -227,17 +227,17 @@ def create_db_from_pdf(
     add_section_metadata: bool = True
 ) -> FAISS:
     """
-    Hàm tiện ích để tạo vector store từ PDF một cách nhanh chóng
+    Utility function to quickly create vector store from PDF
     
     Args:
-        pdf_path (str): Đường dẫn đến file PDF
-        chunk_size (int): Kích thước mỗi chunk
-        chunk_overlap (int): Số ký tự overlap giữa các chunks
-        embedding_model (str): Model embedding
-        add_section_metadata (bool): Có thêm metadata section không
+        pdf_path (str): Path to PDF file
+        chunk_size (int): Size of each chunk
+        chunk_overlap (int): Number of characters overlap between chunks
+        embedding_model (str): Embedding model
+        add_section_metadata (bool): Whether to add section metadata
         
     Returns:
-        FAISS: Vector store đã được tạo
+        FAISS: Created vector store
     """
     pdf_vector_store = PDFVectorStore(embedding_model=embedding_model)
     return pdf_vector_store.create_vector_store_from_pdf(
@@ -253,14 +253,14 @@ def get_db_from_saved(
     embedding_model: str = "models/embedding-001"
 ) -> FAISS:
     """
-    Hàm tiện ích để load vector store đã lưu
+    Utility function to load saved vector store
     
     Args:
-        load_path (str): Đường dẫn thư mục chứa vector store
-        embedding_model (str): Model embedding
+        load_path (str): Directory path containing vector store
+        embedding_model (str): Embedding model
         
     Returns:
-        FAISS: Vector store đã được load
+        FAISS: Loaded vector store
     """
     pdf_vector_store = PDFVectorStore(embedding_model=embedding_model)
     return pdf_vector_store.load_vector_store(load_path)
@@ -280,4 +280,4 @@ if __name__ == "__main__":
     # vector_store = pdf_vs1.create_db_from_pdf("data/Data_wiki_Elon_Musk.pdf", add_section_metadata=False)
     # vector_store.save_local("/db/vector_store_faiss")
 
-    # print("đã tạo vector store và lưu vào local tại: /db/vector_store_faiss")
+    # print("Vector store created and saved to local at: /db/vector_store_faiss")
