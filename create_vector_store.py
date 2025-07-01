@@ -279,10 +279,10 @@ if __name__ == "__main__":
     doc_splits = pdf_vs1.split_documents(doc, chunk_size=1000, chunk_overlap=150)
 
     vector_store = pdf_vs1.create_vector_store(doc_splits)
-    vector_store.save_local("./db/vector_store_faiss")
+    vector_store.save_local("./vector_store_faiss")
 
 
     # vector_store = pdf_vs1.create_db_from_pdf("data/Data_wiki_Elon_Musk.pdf", add_section_metadata=False)
-    # vector_store.save_local("/db/vector_store_faiss")
+    # vector_store.save_local("./vector_store_faiss")
 
-    # print("Vector store created and saved to local at: /db/vector_store_faiss")
+    # print("Vector store created and saved to local at: /vector_store_faiss")
